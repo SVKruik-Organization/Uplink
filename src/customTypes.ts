@@ -7,8 +7,3 @@ export type UplinkMessage = {
     "task": string,
     "content": string,
 }
-
-// Temp
-export type ValidatedRequest = {
-    "name": string;
-}

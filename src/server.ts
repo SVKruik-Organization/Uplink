@@ -1,41 +1,29 @@
 import Fastify, { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify';
 import dotenv from "dotenv";
 import { log } from './utils/logger';
-import { ValidatedRequest } from './customTypes';
 dotenv.config();
 const fastify = Fastify();
 
-fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
-    log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Content Type: ${request.headers["content-type"]}`, "info");
+// Authorization & Logging
+fastify.addHook("onRequest", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
+    const authorization = request.headers.authorization;
+    if (!authorization || authorization.split(" ")[1] !== process.env.REST_DEPLOYMENT_TOKEN) return reply.code(401).send();
+    log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Content Type: ${request.headers['content-type']} || Origin: ${request.headers.origin}`, "info");
     done();
 });
 
-fastify.get("/", async (request: FastifyRequest, reply: FastifyReply) => {
-    return { message: "Hello world!" }
+// Default Endpoint
+fastify.get("/", (_request: FastifyRequest, reply: FastifyReply): void => {
+    reply.send({ message: "Uplink Default Endpoint" });
 });
 
-fastify.route({
-    method: "GET",
-    url: "/validated",
-    schema: {
-        querystring: {
-            type: "object",
-            properties: {
-                name: { type: "string" }
-            },
-            required: ["name"],
-        }
-    },
-    preHandler: (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
-        done();
-    },
-    handler: (request: FastifyRequest, reply: FastifyReply) => {
-        const { name } = request.query as ValidatedRequest;
-        reply.send({ message: `Hello ${name}!` });
-    }
+// GitHub Actions
+fastify.post("/actions", (request: FastifyRequest, reply: FastifyReply): void => {
+    reply.send({ message: "Received" });
+    console.log(request.body);
 });
 
-
+// Start
 fastify.listen({ port: parseInt(process.env.REST_PORT as string) })
     .then(() => {
         log(`Uplink API server listening on port ${process.env.REST_PORT}`, "info");
