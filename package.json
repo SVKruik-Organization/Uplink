@@ -8,8 +8,8 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "start": "sudo bash scripts/start-macos.sh",
-    "stop": "sudo rabbitmqctl shutdown",
+    "dev": "nodemon src/server.ts",
+    "start": "node dist/server.ts",
     "send": "ts-node src/send.ts",
     "receive": "nodemon src/receive.ts",
     "task": "ts-node src/tasks/task.ts",
@@ -24,7 +24,8 @@
   "dependencies": {
     "@types/amqplib": "^0.10.5",
     "amqplib": "^0.10.4",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "fastify": "^4.28.1"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
