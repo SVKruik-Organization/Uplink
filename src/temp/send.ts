@@ -1,8 +1,8 @@
 import amqp from "amqplib/callback_api";
 import dotenv from "dotenv";
-import { log } from "./utils/logger";
-import { getConnectionOptions } from "./utils/auth";
-import { UplinkMessage } from "./customTypes";
+import { log } from "../utils/logger";
+import { getConnectionOptions } from "../utils/auth";
+import { UplinkMessage } from "../customTypes";
 dotenv.config();
 const queue: string | undefined = process.env.AMQP_MAIN_QUEUE;
 if (!queue) throw new Error("AQMP queue name missing.");
