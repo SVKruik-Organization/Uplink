@@ -23,10 +23,11 @@ amqp.connect(getConnectionOptions(), (error0, connection) => {
             trigger_source: "Manual",
             reason: "Testing I/O",
             task: "log",
-            content: "Hello there Stelleri!"
+            content: "Hello there Stelleri!",
+            timestamp: new Date()
         };
         channel.publish("bot-exchange", "Stelleri", Buffer.from(JSON.stringify(payload)));
-        log(`Sent message to || ${payload.recipient} ||`, "info");
+        log(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for '${payload.reason}'`, "info");
 
         // Exit
         setTimeout(() => {

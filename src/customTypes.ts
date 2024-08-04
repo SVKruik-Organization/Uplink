@@ -6,4 +6,12 @@ export type UplinkMessage = {
     "reason": string,
     "task": string,
     "content": string,
+    "timestamp": Date
+}
+
+// GitHub Actions Request
+export type ActionEntry = {
+    "type": string,
+    "repository": string,
+    "payload": any
 }
