@@ -12,7 +12,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
     const authorization = request.headers.authorization;
     if (!authorization || authorization.split(" ")[1] !== process.env.REST_DEPLOYMENT_TOKEN) return reply.code(401).send();
     console.log(request.body);
-    log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Content Type: ${request.headers['content-type']} || Body: ${request.body ? `(100 char limit) ${JSON.stringify(request.body).slice(0, 100)}` : "None"}`, "info");
+    log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Body: ${request.body ? `(100 char limit) ${JSON.stringify(request.body).slice(0, 100)}` : "None"}`, "info");
     done();
 });
 
@@ -47,6 +47,16 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("platform", "direct", "server", {
                         sender: "Uplink/Integrations",
                         recipient: "Bot-Website/*",
+                        trigger_source: "GitHub Actions",
+                        reason: "GitHub Actions Push Event",
+                        task: "Deploy",
+                        content: JSON.stringify(body.payload),
+                        timestamp: new Date()
+                    });
+                } else if (body.repository === "Portfolio-Website") {
+                    await sendUplink("portfolio", "direct", "server", {
+                        sender: "Uplink/Integrations",
+                        recipient: "Portfolio-Website/server",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
