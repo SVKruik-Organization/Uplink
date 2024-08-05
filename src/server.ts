@@ -11,7 +11,6 @@ const fastify = Fastify();
 fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
     const authorization = request.headers.authorization;
     if (!authorization || authorization.split(" ")[1] !== process.env.REST_DEPLOYMENT_TOKEN) return reply.code(401).send();
-    console.log(request.body);
     log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Body: ${request.body ? `(100 char limit) ${JSON.stringify(request.body).slice(0, 100)}` : "None"}`, "info");
     done();
 });
@@ -34,9 +33,9 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
         switch (body.type) {
             case "push":
                 if (body.repository === "Discord-Bots") {
-                    await sendUplink("bot-broadcasts", "fanout", "", {
+                    await sendUplink("bot-exchange", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
-                        recipient: "Discord-Bots/*",
+                        recipient: "Discord-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
@@ -67,9 +66,9 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 break;
             case "release":
                 if (body.repository === "Discord-Bots") {
-                    await sendUplink("bot-exchange", "direct", "Stelleri", {
+                    await sendUplink("bot-exchange", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
-                        recipient: "Discord-Bots/Stelleri",
+                        recipient: "Discord-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Release Event",
                         task: "Broadcast",
