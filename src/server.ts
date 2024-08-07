@@ -32,20 +32,20 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
         // Sending Downstream
         switch (body.type) {
             case "push":
-                if (body.repository === "Discord-Bots") {
+                if (body.repository === "SK-Bots") {
                     await sendUplink("bot-exchange", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
-                        recipient: "Discord-Bots/Apricaria",
+                        recipient: "SK-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
                         content: JSON.stringify(body.payload),
                         timestamp: new Date()
                     });
-                } else if (body.repository === "Bot-Website") {
+                } else if (body.repository === "SK-Platform") {
                     await sendUplink("platform", "direct", "server", {
                         sender: "Uplink/Integrations",
-                        recipient: "Bot-Website/*",
+                        recipient: "SK-Platform/*",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
@@ -65,10 +65,10 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 }
                 break;
             case "release":
-                if (body.repository === "Discord-Bots") {
+                if (body.repository === "SK-Bots") {
                     await sendUplink("bot-exchange", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
-                        recipient: "Discord-Bots/Apricaria",
+                        recipient: "SK-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Release Event",
                         task: "Broadcast",

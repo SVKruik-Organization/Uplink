@@ -1,22 +1,21 @@
 {
-  "name": "uplink",
+  "name": "sk-uplink",
+  "description": "SK Uplink",
   "version": "1.0.0",
-  "description": "RabbitMQ AMQP communication network for internal communication.",
+  "author": "Stefan Kruik",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SVKruik-Organization/Uplink.git"
   },
+  "bugs": {
+    "url": "https://github.com/SVKruik-Organization/Uplink/issues"
+  },
+  "homepage": "https://github.com/SVKruik-Organization/Uplink#readme",
   "scripts": {
     "build": "npx tsc",
     "dev": "nodemon src/server.ts",
     "start": "node dist/server.js"
   },
-  "author": "Stefan Kruik",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/SVKruik-Organization/Uplink/issues"
-  },
-  "homepage": "https://github.com/SVKruik-Organization/Uplink#readme",
   "dependencies": {
     "amqplib": "^0.10.4",
     "dotenv": "^16.4.5",
