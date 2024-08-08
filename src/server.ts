@@ -33,13 +33,23 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
         switch (body.type) {
             case "push":
                 if (body.repository === "SK-Bots") {
+                    const payload: string = JSON.stringify(body.payload);
                     await sendUplink("bot-exchange", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
-                        content: JSON.stringify(body.payload),
+                        content: payload,
+                        timestamp: new Date()
+                    });
+                    await sendUplink("bot-exchange", "direct", "Ispidina", {
+                        sender: "Uplink/Integrations",
+                        recipient: "SK-Bots/Ispidina",
+                        trigger_source: "GitHub Actions",
+                        reason: "GitHub Actions Push Event",
+                        task: "Deploy",
+                        content: payload,
                         timestamp: new Date()
                     });
                 } else if (body.repository === "SK-Platform") {
