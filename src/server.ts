@@ -16,7 +16,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 });
 
 // Default Endpoint
-fastify.get("/", (_request: FastifyRequest, reply: FastifyReply): void => {
+fastify.get("/", async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     reply.send({ message: "Uplink Default Endpoint" });
 });
 
@@ -33,56 +33,56 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
         switch (body.type) {
             case "push":
                 if (body.repository === "SK-Bots") {
-                    const payload: string = JSON.stringify(body.payload);
-                    await sendUplink("bot-exchange", "direct", "Apricaria", {
+                    await sendUplink("broadcast-bots", "fanout", "", {
                         sender: "Uplink/Integrations",
-                        recipient: "SK-Bots/Apricaria",
+                        recipient: "SK-Bots/*",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
-                        content: payload,
-                        timestamp: new Date()
-                    });
-                    await sendUplink("bot-exchange", "direct", "Ispidina", {
-                        sender: "Uplink/Integrations",
-                        recipient: "SK-Bots/Ispidina",
-                        trigger_source: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: payload,
+                        content: body.payload,
                         timestamp: new Date()
                     });
                 } else if (body.repository === "SK-Platform") {
-                    await sendUplink("platform", "direct", "server", {
+                    await sendUplink("unicast-products", "direct", "platform", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Platform/*",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
-                        content: JSON.stringify(body.payload),
+                        content: body.payload,
                         timestamp: new Date()
                     });
                 } else if (body.repository === "Portfolio-Website") {
-                    await sendUplink("portfolio", "direct", "server", {
+                    await sendUplink("unicast-misc", "direct", "portfolio", {
                         sender: "Uplink/Integrations",
                         recipient: "Portfolio-Website/server",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
-                        content: JSON.stringify(body.payload),
+                        content: body.payload,
+                        timestamp: new Date()
+                    });
+                } else if (body.repository === "Overway") {
+                    await sendUplink("unicast-services", "direct", "Overway", {
+                        sender: "Uplink/Integrations",
+                        recipient: "Overway",
+                        trigger_source: "GitHub Actions",
+                        reason: "GitHub Actions Push Event",
+                        task: "Deploy",
+                        content: body.payload,
                         timestamp: new Date()
                     });
                 }
                 break;
             case "release":
                 if (body.repository === "SK-Bots") {
-                    await sendUplink("bot-exchange", "direct", "Apricaria", {
+                    await sendUplink("unicast-bots", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Bots/Apricaria",
                         trigger_source: "GitHub Actions",
                         reason: "GitHub Actions Release Event",
                         task: "Broadcast",
-                        content: JSON.stringify(body.payload),
+                        content: body.payload,
                         timestamp: new Date()
                     });
                 }

@@ -14,7 +14,7 @@ amqp.connect(getConnectionOptions(), (error0, connection) => {
         // Setup
         if (error1) throw error1;
         channel.assertQueue(queue, { durable: false });
-        channel.assertExchange("bot-exchange", "direct", { durable: false });
+        channel.assertExchange("unicast-bots", "direct", { durable: false });
 
         // Send
         const payload: UplinkMessage = {
@@ -26,7 +26,7 @@ amqp.connect(getConnectionOptions(), (error0, connection) => {
             content: "Hello there Stelleri!",
             timestamp: new Date()
         };
-        channel.publish("bot-exchange", "Stelleri", Buffer.from(JSON.stringify(payload)));
+        channel.publish("unicast-bots", "Stelleri", Buffer.from(JSON.stringify(payload)));
         log(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for '${payload.reason}'`, "info");
 
         // Exit

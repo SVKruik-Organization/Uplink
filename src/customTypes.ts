@@ -13,5 +13,5 @@ export type UplinkMessage = {
 export type ActionEntry = {
     "type": string,
     "repository": string,
-    "payload": any
+    "payload": string
 }
