@@ -15,11 +15,6 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
     done();
 });
 
-// Default Endpoint
-fastify.get("/", async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
-    reply.send({ message: "Uplink Default Endpoint" });
-});
-
 // GitHub Actions
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
@@ -93,6 +88,14 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
     } catch (error: any) {
         logError(error);
     }
+});
+
+// Default Endpoint
+fastify.get("*", async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    reply.send({ message: "SK Uplink API" });
+});
+fastify.post("*", async (_request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    reply.send({ message: "SK Uplink API" });
 });
 
 // Start
