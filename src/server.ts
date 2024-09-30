@@ -31,7 +31,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("broadcast-bots", "fanout", "", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Bots/*",
-                        trigger_source: "GitHub Actions",
+                        triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
                         content: body.payload,
@@ -41,7 +41,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("unicast-products", "direct", "platform", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Platform/*",
-                        trigger_source: "GitHub Actions",
+                        triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
                         content: body.payload,
@@ -51,7 +51,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("unicast-misc", "direct", "portfolio", {
                         sender: "Uplink/Integrations",
                         recipient: "Portfolio-Website/server",
-                        trigger_source: "GitHub Actions",
+                        triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
                         content: body.payload,
@@ -61,7 +61,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("unicast-services", "direct", "Overway", {
                         sender: "Uplink/Integrations",
                         recipient: "Overway",
-                        trigger_source: "GitHub Actions",
+                        triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
                         content: body.payload,
@@ -74,7 +74,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await sendUplink("unicast-bots", "direct", "Apricaria", {
                         sender: "Uplink/Integrations",
                         recipient: "SK-Bots/Apricaria",
-                        trigger_source: "GitHub Actions",
+                        triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Release Event",
                         task: "Broadcast",
                         content: body.payload,

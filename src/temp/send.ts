@@ -20,7 +20,7 @@ amqp.connect(getConnectionOptions(), (error0, connection) => {
         const payload: UplinkMessage = {
             sender: "Uplink/send",
             recipient: "SK-Bots/Stelleri",
-            trigger_source: "Manual",
+            triggerSource: "Manual",
             reason: "Testing I/O",
             task: "log",
             content: "Hello there Stelleri!",
