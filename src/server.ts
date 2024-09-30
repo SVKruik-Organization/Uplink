@@ -40,7 +40,17 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 } else if (body.repository === "SK-Platform") {
                     await sendUplink("unicast-products", "direct", "platform", {
                         sender: "Uplink/Integrations",
-                        recipient: "SK-Platform/*",
+                        recipient: "SK-Platform/frontend",
+                        triggerSource: "GitHub Actions",
+                        reason: "GitHub Actions Push Event",
+                        task: "Deploy",
+                        content: body.payload,
+                        timestamp: new Date()
+                    });
+                } else if (body.repository === "SK-Metrics") {
+                    await sendUplink("unicast-products", "direct", "metrics", {
+                        sender: "Uplink/Integrations",
+                        recipient: "SK-Metrics/frontend",
                         triggerSource: "GitHub Actions",
                         reason: "GitHub Actions Push Event",
                         task: "Deploy",
