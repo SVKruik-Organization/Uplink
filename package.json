@@ -17,9 +17,9 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
-    "amqplib": "^0.10.4",
-    "dotenv": "^16.4.5",
-    "fastify": "^4.28.1"
+    "amqplib": "^0.10.5",
+    "dotenv": "^16.4.7",
+    "fastify": "^4.29.0"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
