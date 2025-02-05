@@ -1,0 +1,14 @@
+name: Deploy SK Uplink
+on:
+  push
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X POST \
+               -H "Content-Type: application/json" \
+               -H "Authorization: Bearer ${{ secrets.DEPLOYMENT_PASSWORD }}" \
+               -d '{"type":"push","repository":"Uplink", "payload": {} }' \
+               ${{ secrets.DEPLOYMENT_ENDPOINT }}

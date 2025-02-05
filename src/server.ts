@@ -4,6 +4,7 @@ import { log, logError } from './utils/logger';
 import { ActionEntry } from './customTypes';
 import { getConnection, sendUplink } from './utils/connection';
 import { Channel } from 'amqplib';
+import shell from "shelljs";
 dotenv.config();
 const fastify = Fastify();
 
@@ -22,7 +23,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
         reply.send({ message: "Received" });
         const body: ActionEntry = request.body as ActionEntry;
         const channel: Channel | null = await getConnection();
-        if (!channel) return;
+        if (!channel || !body) return;
 
         // Sending Downstream
         switch (body.type) {
@@ -77,6 +78,11 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                         content: body.payload,
                         timestamp: new Date()
                     });
+                } else if (body.repository === "Uplink") {
+                    if (process.platform === "linux") {
+                        log("Received new deploy task. Running Documentation deployment script.", "info");
+                        shell.exec("bash deploy.sh");
+                    }
                 }
                 break;
             case "release":
