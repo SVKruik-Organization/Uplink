@@ -78,6 +78,16 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                         content: body.payload,
                         timestamp: new Date()
                     });
+                } else if (body.repository === "TSE") {
+                    await sendUplink("unicast-products", "direct", "TSE", {
+                        sender: "Uplink/Integrations",
+                        recipient: "TSE/backend",
+                        triggerSource: "GitLab CI/CD",
+                        reason: "GitLab CI/CD Deploy Event",
+                        task: "Deploy",
+                        content: body.payload,
+                        timestamp: new Date()
+                    });
                 } else if (body.repository === "Uplink") {
                     if (process.platform === "linux") {
                         log("Received new deploy task. Running Documentation deployment script.", "info");
