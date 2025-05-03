@@ -1,0 +1,19 @@
+import { ActionEntry } from "../customTypes";
+import { sendUplink } from "../utils/connection";
+
+/**
+ * Deploys the TSE Rabbit website.
+ * 
+ * @param body The body of the action entry
+ */
+export async function pushRabbit(body: ActionEntry): Promise<void> {
+    await sendUplink("unicast-products", "direct", "Rabbit", {
+        sender: "Uplink/Integrations",
+        recipient: "Rabbit/support",
+        triggerSource: "GitLab CI/CD",
+        reason: "GitLab CI/CD Deploy Event",
+        task: "Deploy",
+        content: body.payload,
+        timestamp: new Date()
+    });
+}

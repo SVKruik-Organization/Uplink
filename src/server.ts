@@ -2,11 +2,18 @@ import Fastify, { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from '
 import dotenv from "dotenv";
 import { log, logError } from './utils/logger';
 import { ActionEntry } from './customTypes';
-import { getConnection, sendUplink } from './utils/connection';
+import { getConnection } from './utils/connection';
 import { Channel } from 'amqplib';
-import shell from "shelljs";
 dotenv.config();
 const fastify = Fastify();
+
+// Outbound Handlers
+import { pushSkBots, releaseSkBots } from './out/sk-bots';
+import { pushSkPlatform } from './out/sk-platform';
+import { pushPortfolio } from './out/portfolio';
+import { pushOverway } from './out/overway';
+import { pushRabbit } from './out/rabbit';
+import { pushUplink } from './out/uplink';
 
 // Authorization & Logging
 fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
@@ -20,95 +27,42 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received" });
+        reply.send({ message: "Received 2505" });
         const body: ActionEntry = request.body as ActionEntry;
         const channel: Channel | null = await getConnection();
         if (!channel || !body) return;
 
         // Sending Downstream
-        switch (body.type) {
-            case "push":
-                if (body.repository === "SK-Bots") {
-                    await sendUplink("broadcast-bots", "fanout", "", {
-                        sender: "Uplink/Integrations",
-                        recipient: "SK-Bots/*",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "SK-Platform") {
-                    await sendUplink("unicast-products", "direct", "platform", {
-                        sender: "Uplink/Integrations",
-                        recipient: "SK-Platform/frontend",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "SK-Metrics") {
-                    await sendUplink("unicast-products", "direct", "metrics", {
-                        sender: "Uplink/Integrations",
-                        recipient: "SK-Metrics/frontend",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "Portfolio-Website") {
-                    await sendUplink("unicast-misc", "direct", "portfolio", {
-                        sender: "Uplink/Integrations",
-                        recipient: "Portfolio-Website/server",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "Overway") {
-                    await sendUplink("unicast-services", "direct", "Overway", {
-                        sender: "Uplink/Integrations",
-                        recipient: "Overway",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Push Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "TSE") {
-                    await sendUplink("unicast-products", "direct", "TSE", {
-                        sender: "Uplink/Integrations",
-                        recipient: "TSE/backend",
-                        triggerSource: "GitLab CI/CD",
-                        reason: "GitLab CI/CD Deploy Event",
-                        task: "Deploy",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                } else if (body.repository === "Uplink") {
-                    if (process.platform === "linux") {
-                        log("Received new deploy task. Running Documentation deployment script.", "info");
-                        shell.exec("bash deploy.sh");
-                    }
-                }
-                break;
-            case "release":
-                if (body.repository === "SK-Bots") {
-                    await sendUplink("unicast-bots", "direct", "Apricaria", {
-                        sender: "Uplink/Integrations",
-                        recipient: "SK-Bots/Apricaria",
-                        triggerSource: "GitHub Actions",
-                        reason: "GitHub Actions Release Event",
-                        task: "Broadcast",
-                        content: body.payload,
-                        timestamp: new Date()
-                    });
-                }
+        if (body.type === "push") {
+            switch (body.repository) {
+                case "SK-Bots":
+                    await pushSkBots(body);
+                    break;
+                case "SK-Platform":
+                    await pushSkPlatform(body);
+                    break;
+                case "Portfolio-Website":
+                    await pushPortfolio(body);
+                    break;
+                case "Overway":
+                    await pushOverway(body);
+                    break;
+                case "Rabbit":
+                    await pushRabbit(body);
+                    break;
+                case "Uplink":
+                    pushUplink();
+                    break;
+                default:
+                    log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
+                    break;
+            }
+        } else switch (body.repository) {
+            case "SK-Bots":
+                await releaseSkBots(body);
                 break;
             default:
+                log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
                 break;
         }
     } catch (error: any) {
