@@ -11,7 +11,7 @@ export type UplinkMessage = {
 
 // GitHub Actions Request
 export type ActionEntry = {
-    "type": "push" | "release",
+    "type": "push" | "release" | "search",
     "repository": string,
     "payload": string
 }
