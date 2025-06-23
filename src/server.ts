@@ -12,7 +12,6 @@ import { pushSkBots, releaseSkBots } from './out/sk-bots';
 import { pushSkPlatform } from './out/sk-platform';
 import { pushPortfolio } from './out/portfolio';
 import { pushOverway } from './out/overway';
-import { pushRabbit, searchRabbit } from './out/rabbit';
 import { pushUplink } from './out/uplink';
 
 // Authorization & Logging
@@ -27,7 +26,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2505.1" });
+        reply.send({ message: "Received 2505.2" });
         const body: ActionEntry = request.body as ActionEntry;
         const channel: Channel | null = await getConnection();
         if (!channel || !body) return;
@@ -49,9 +48,6 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 case "Overway":
                     await pushOverway(body);
                     break;
-                case "Rabbit":
-                    await pushRabbit(body);
-                    break;
                 case "Uplink":
                     pushUplink();
                     break;
@@ -65,17 +61,6 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
             switch (body.repository) {
                 case "SK-Bots":
                     await releaseSkBots(body);
-                    break;
-                default:
-                    log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
-                    break;
-            }
-
-            // Used for updating the search index when a search event is received.
-        } else if (body.type === "search") {
-            switch (body.repository) {
-                case "Rabbit":
-                    await searchRabbit(body);
                     break;
                 default:
                     log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
