@@ -7,12 +7,13 @@ import { Channel } from 'amqplib';
 dotenv.config();
 const fastify = Fastify();
 
-// Outbound Handlers
+// Downstream Handlers
 import { pushSkBots, releaseSkBots } from './out/sk-bots';
 import { pushSkPlatform } from './out/sk-platform';
 import { pushPortfolio } from './out/portfolio';
 import { pushOverway } from './out/overway';
 import { pushUplink } from './out/uplink';
+import { pushDjOpenSource } from './out/dj-open-source';
 
 // Authorization & Logging
 fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
@@ -26,7 +27,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2505.2" });
+        reply.send({ message: "Received 2511.1" });
         const body: ActionEntry = request.body as ActionEntry;
         const channel: Channel | null = await getConnection();
         if (!channel || !body) return;
@@ -45,6 +46,9 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 case "Portfolio-Website":
                     await pushPortfolio(body);
                     break;
+                case "DJ-Open-Source":
+                    await pushDjOpenSource(body);
+                    break;
                 case "Overway":
                     await pushOverway(body);
                     break;
@@ -52,7 +56,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     pushUplink();
                     break;
                 default:
-                    log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
+                    log(`Received unsupported ${body.type} event from ${body.repository} repository.`, "info");
                     break;
             }
 
@@ -63,7 +67,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await releaseSkBots(body);
                     break;
                 default:
-                    log(`Received invalid ${body.type} event from ${body.repository} repository.`, "info");
+                    log(`Received unsupported ${body.type} event from ${body.repository} repository.`, "info");
                     break;
             }
         }
