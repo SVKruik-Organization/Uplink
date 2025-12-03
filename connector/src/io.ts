@@ -1,6 +1,6 @@
 import { Channel, Message } from "amqplib";
 import { exec } from "shelljs";
-import { TaskHandler, UplinkMessage } from "../types";
+import { TaskHandler, UplinkExchanges, UplinkExchangeTypes, UplinkMessage, UplinkRoutingKeys } from "../types";
 import { logData, logError } from "@svkruik/sk-platform-formatters";
 import { getUplinkConnection } from "./connection";
 
@@ -53,14 +53,15 @@ export async function mountUplink(taskHandler: TaskHandler | null = null, option
         }, {
             noAck: false
         });
-    } catch {
+    } catch (error: any) {
         retries += 1;
         if (retries < (options?.allowedRetries || 3)) {
             logData(`Mounting Uplink connector failed. Retrying ${retries}/3...`, "warning");
             return await mountUplink(taskHandler, options);
         }
         retries = 0;
-        throw new Error("Failed to mount Uplink connector.");
+        logData("Mounting Uplink connector failed after maximum retries.", "warning");
+        logError(error);
     }
 }
 
@@ -72,7 +73,7 @@ export async function mountUplink(taskHandler: TaskHandler | null = null, option
  * @param exchangeKey The routing key of the exchange
  * @param payload The data to send
  */
-export async function sendUplink(exchange: string, exchangeType: string, exchangeKey: string, payload: UplinkMessage): Promise<void> {
+export async function sendUplink(exchange: UplinkExchanges, exchangeType: UplinkExchangeTypes, exchangeKey: UplinkRoutingKeys, payload: UplinkMessage): Promise<void> {
     try {
         const channel: Channel | null = await getUplinkConnection();
         if (!channel) throw new Error("Uplink connection missing.");

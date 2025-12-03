@@ -1,9 +1,14 @@
-export namespace Uplink {
+export namespace Connection {
+    export async function getUplinkConnection(): Promise<amqp.Channel | null>;
+    export function getConnectionOptions(): Options.Connect;
+}
+
+export namespace IO {
     export async function mountUplink(taskHandler: TaskHandler | null = null, options?: {
         allowedRetries?: number,
         deployTaskOptOut?: boolean
     }): Promise<void>
-    export async function sendUplink(exchange: UplinkExchanges, exchangeType: UplinkRoutingKeys, exchangeKey: string, payload: UplinkMessage): Promise<void>;
+    export async function sendUplink(exchange: UplinkExchanges, exchangeType: UplinkExchangeTypes, exchangeKey: UplinkRoutingKeys, payload: UplinkMessage): Promise<void>;
 }
 
 export type UplinkMessage = {
