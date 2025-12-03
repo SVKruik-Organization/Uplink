@@ -1,16 +1,43 @@
-export namespace Connection {
-    export async function getUplinkConnection(): Promise<amqp.Channel | null>;
-    export function getConnectionOptions(): Options.Connect;
-}
+import amqp, { Options } from "amqplib";
 
-export namespace IO {
-    export async function mountUplink(taskHandler: TaskHandler | null = null, options?: {
-        allowedRetries?: number,
-        deployTaskOptOut?: boolean
-    }): Promise<void>
-    export async function sendUplink(exchange: UplinkExchanges, exchangeType: UplinkExchangeTypes, exchangeKey: UplinkRoutingKeys, payload: UplinkMessage): Promise<void>;
-}
+// Connection
+export async function getUplinkConnection(envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string
+}): Promise<amqp.Channel | null>;
+export function getConnectionOptions(envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string
+}): Options.Connect;
 
+// I/O
+export function mountUplink(taskHandler?: TaskHandler, options?: {
+    allowedRetries?: number,
+    deployTaskOptOut?: boolean
+}, envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string
+    exchangeName?: string,
+    routingKey?: string
+}): Promise<void>;
+export function sendUplink(exchangeOptions: {
+    name: UplinkExchanges,
+    type: UplinkExchangeTypes,
+    router: UplinkRoutingKeys
+}, payload: UplinkMessage, envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string
+}): Promise<void>;
+
+// Types
 export type UplinkMessage = {
     "sender": string,
     "recipient": string,
@@ -48,3 +75,5 @@ export type UplinkRoutingKeys =
     // unicast-misc
     | "Portfolio"
 
+    // Broadcasts
+    | ""

@@ -1,10 +1,14 @@
 # SK Uplink
 
+[![Publish Package](https://github.com/SVKruik-Organization/Uplink/actions/workflows/publish.yml/badge.svg)](https://github.com/SVKruik-Organization/Uplink/actions/workflows/publish.yml)
+[![NPM Version](https://img.shields.io/npm/v/%40svkruik%2Fsk-uplink-connector?label=%40svkruik%2Fsk-uplink-connector&color=green)](https://www.npmjs.com/package/@svkruik/sk-uplink-connector)
+
 Welcome to SK Uplink, a high-perfomance RabbitMQ communication network for internal communication between the all the different products. It handles updates, CI/CD and distribution of tasks, and functions like an hivemind. Did you upset Apricaria? Well, now Stelleri knows aswell (figure of speech, *or is it?*).
 
-In the `server` directory you can find the distribution server that listens to requests from the GitHub Actions pipelines.
+#### Directories
 
-The `connection` directory contains the NPM package that all the individual applications use to connect with Uplink.
+- `server`: The Uplink API that listens to requests from the CI/CD pipelines. It will send a RabbitMQ deployment task downstream.
+- `connector`: The NPM package that all Uplink clients rely on. It provides a consistent and easy way to connect to Uplink.
 
 ---
 

@@ -1,5 +1,5 @@
-import { ActionEntry } from "../customTypes";
-import { defaultPayload, sendUplink } from "../utils/connection";
+import { ActionEntry, deployPayload } from "../customTypes";
+import { sendUplink } from "@svkruik/sk-uplink-connector";
 
 /**
  * Deploys the SK Bots.
@@ -7,10 +7,14 @@ import { defaultPayload, sendUplink } from "../utils/connection";
  * @param body The body of the action entry
  */
 export async function pushSkBots(body: ActionEntry): Promise<void> {
-    await sendUplink("broadcast-bots", "fanout", "", {
+    await sendUplink({
+        "name": "broadcast-bots",
+        "type": "fanout",
+        "router": ""
+    }, {
         recipient: "SK-Bots/*",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 }
 
@@ -20,9 +24,13 @@ export async function pushSkBots(body: ActionEntry): Promise<void> {
  * @param body The body of the action entry
  */
 export async function releaseSkBots(body: ActionEntry): Promise<void> {
-    await sendUplink("unicast-bots", "direct", "Apricaria", {
+    await sendUplink({
+        "name": "unicast-bots",
+        "type": "direct",
+        "router": "Apricaria"
+    }, {
         recipient: "SK-Bots/Apricaria",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 }

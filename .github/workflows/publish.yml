@@ -1,4 +1,4 @@
-name: Publish Package
+name: Publish SK Uplink - Connector
 
 on:
     push:
@@ -19,10 +19,13 @@ jobs:
               with:
                   node-version: "20"
                   registry-url: "https://registry.npmjs.org"
-            - run: cd connector
 
             - name: Update npm
               run: npm install -g npm@latest
+              working-directory: connector
             - run: npm ci
+              working-directory: connector
             - run: npm run build --if-present
+              working-directory: connector
             - run: npm publish
+              working-directory: connector

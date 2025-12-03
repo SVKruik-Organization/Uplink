@@ -7,7 +7,7 @@
     "amqp",
     "rabbitmq"
   ],
-  "version": "0.0.2",
+  "version": "0.1.1",
   "author": "Stefan Kruik",
   "repository": {
     "type": "git",
@@ -21,11 +21,15 @@
   "scripts": {
     "build": "npx tsc"
   },
-  "types": "index.d.ts",
+  "types": "types.d.ts",
   "main": "dist/index.js",
   "publishConfig": {
     "access": "public"
   },
+  "files": [
+    "dist",
+    "types.d.ts"
+  ],
   "dependencies": {
     "@svkruik/sk-platform-formatters": "^0.0.3",
     "@types/amqplib": "^0.10.8",

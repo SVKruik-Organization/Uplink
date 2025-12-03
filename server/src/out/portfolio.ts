@@ -1,5 +1,5 @@
-import { ActionEntry } from "../customTypes";
-import { defaultPayload, sendUplink } from "../utils/connection";
+import { ActionEntry, deployPayload } from "../customTypes";
+import { sendUplink } from "@svkruik/sk-uplink-connector";
 
 /**
  * Deploys the personal portfolio website.
@@ -7,9 +7,13 @@ import { defaultPayload, sendUplink } from "../utils/connection";
  * @param body The body of the action entry
  */
 export async function pushPortfolio(body: ActionEntry): Promise<void> {
-    await sendUplink("unicast-misc", "direct", "Portfolio", {
+    await sendUplink({
+        "name": "unicast-misc",
+        "type": "direct",
+        "router": "Portfolio"
+    }, {
         recipient: "Portfolio-Website/server",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 }

@@ -12,18 +12,24 @@ let retries: number = 0;
  * 
  * @param taskHandler Additional handling for other received tasks.
  * @param options Configuration options for mounting.
- * @param options.allowedRetries Number of allowed retries when mounting fails. Default is 3.
- * @param options.deployTaskOptOut If true, the "Deploy" task will not trigger deployment script execution.
+ * @param envLocationOverwrite Optional overwrite for environment variables. Used for frontend environments where env vars are not directly accessible.
  * @throws Will throw an error when the mounting fails after 3 retries.
  */
-export async function mountUplink(taskHandler: TaskHandler | null = null, options?: {
+export async function mountUplink(taskHandler?: TaskHandler, options?: {
     allowedRetries?: number,
     deployTaskOptOut?: boolean
+}, envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string,
+    exchangeName?: string,
+    routingKey?: string
 }): Promise<void> {
     try {
-        const channel: Channel | null = await getUplinkConnection();
-        const exchangeName: string | undefined = process.env.UPLINK_EXCHANGE;;
-        const routingKey: string | undefined = process.env.UPLINK_ROUTING_KEY;
+        const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
+        const exchangeName: string | undefined = envLocationOverwrite?.exchangeName ?? process.env.UPLINK_EXCHANGE;
+        const routingKey: string | undefined = envLocationOverwrite?.routingKey ?? process.env.UPLINK_ROUTING_KEY;
         if (!channel) throw new Error("Uplink connection missing.");
         if (!exchangeName) throw new Error("Uplink exchange name missing.");
         if (!routingKey) throw new Error("Uplink routing key missing.");
@@ -37,15 +43,15 @@ export async function mountUplink(taskHandler: TaskHandler | null = null, option
             if (message) {
                 const messageContent: UplinkMessage = JSON.parse(message.content.toString());
                 channel.ack(message);
+                logData(`Received Uplink message from '${messageContent.sender}' for reason '${messageContent.reason}'`, "info");
 
                 switch (messageContent.task) {
                     case "Deploy":
-                        if (process.env.NODE_ENV === "production" && !options?.deployTaskOptOut) {
-                            logData(`Received new deployment task from ${messageContent.sender}. Running deployment script.`, "alert");
+                        if (process.env.NODE_ENV === "production" && !(options?.deployTaskOptOut))
                             exec("bash deploy.sh");
-                        }
                         break;
                     default:
+                        logData(`No default handler for task '${messageContent.task}'. Passing to custom handler if available.`, "info");
                         if (taskHandler) taskHandler(messageContent);
                         break;
                 }
@@ -53,6 +59,8 @@ export async function mountUplink(taskHandler: TaskHandler | null = null, option
         }, {
             noAck: false
         });
+
+        logData(`Uplink connector mounted on exchange '${exchangeName}' with routing key '${routingKey}'`, "info");
     } catch (error: any) {
         retries += 1;
         if (retries < (options?.allowedRetries || 3)) {
@@ -68,17 +76,25 @@ export async function mountUplink(taskHandler: TaskHandler | null = null, option
 /**
  * Publish a message on a RabbitMQ exchange.
  * 
- * @param exchange The name of the exchange to publish to.
- * @param exchangeType The type of exchange (choose a valid RabbitMQ type)
- * @param exchangeKey The routing key of the exchange
- * @param payload The data to send
+ * @param exchangeOptions Options for the exchange to publish the message to.
+ * @param payload The Uplink message payload.
+ * @param envLocationOverwrite Optional overwrite for environment variables. Used for frontend environments where env vars are not directly accessible.
  */
-export async function sendUplink(exchange: UplinkExchanges, exchangeType: UplinkExchangeTypes, exchangeKey: UplinkRoutingKeys, payload: UplinkMessage): Promise<void> {
+export async function sendUplink(exchangeOptions: {
+    name: UplinkExchanges,
+    type: UplinkExchangeTypes,
+    router: UplinkRoutingKeys
+}, payload: UplinkMessage, envLocationOverwrite?: {
+    host?: string,
+    port?: string,
+    username?: string,
+    password?: string
+}): Promise<void> {
     try {
-        const channel: Channel | null = await getUplinkConnection();
+        const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
         if (!channel) throw new Error("Uplink connection missing.");
-        channel.assertExchange(exchange, exchangeType, { durable: false });
-        channel.publish(exchange, exchangeKey, Buffer.from(JSON.stringify(payload)));
+        channel.assertExchange(exchangeOptions.name, exchangeOptions.type, { durable: false });
+        channel.publish(exchangeOptions.name, exchangeOptions.router, Buffer.from(JSON.stringify(payload)));
         logData(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for reason '${payload.reason}'`, "info");
     } catch (error: any) {
         logError(error);

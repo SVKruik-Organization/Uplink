@@ -1,5 +1,5 @@
-import { ActionEntry } from "../customTypes";
-import { defaultPayload, sendUplink } from "../utils/connection";
+import { ActionEntry, deployPayload } from "../customTypes";
+import { sendUplink } from "@svkruik/sk-uplink-connector";
 
 /**
  * Deploys the SK Platform components.
@@ -7,15 +7,23 @@ import { defaultPayload, sendUplink } from "../utils/connection";
  * @param body The body of the action entry
  */
 export async function pushSkPlatform(body: ActionEntry): Promise<void> {
-    await sendUplink("unicast-products", "direct", "Platform", {
+    await sendUplink({
+        "name": "unicast-products",
+        "type": "direct",
+        "router": "Platform"
+    }, {
         recipient: "SK-Platform/frontend",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 
-    await sendUplink("unicast-products", "direct", "Docs", {
+    await sendUplink({
+        "name": "unicast-products",
+        "type": "direct",
+        "router": "Docs"
+    }, {
         recipient: "SK-Platform/docs",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 }

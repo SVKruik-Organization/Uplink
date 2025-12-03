@@ -1,5 +1,5 @@
-import { ActionEntry } from "../customTypes";
-import { defaultPayload, sendUplink } from "../utils/connection";
+import { ActionEntry, deployPayload } from "../customTypes";
+import { sendUplink } from "@svkruik/sk-uplink-connector";
 
 /**
  * Deploy the authentication service.
@@ -7,9 +7,13 @@ import { defaultPayload, sendUplink } from "../utils/connection";
  * @param body The body of the action entry
  */
 export async function pushOverway(body: ActionEntry): Promise<void> {
-    await sendUplink("unicast-products", "direct", "Overway", {
+    await sendUplink({
+        "name": "unicast-products",
+        "type": "direct",
+        "router": "Overway"
+    }, {
         recipient: "Overway",
         content: body.payload,
-        ...defaultPayload
+        ...deployPayload
     });
 }
