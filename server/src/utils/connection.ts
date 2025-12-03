@@ -1,9 +1,9 @@
 import amqp from "amqplib";
 import dotenv from "dotenv";
-import { log, logError } from "../utils/logger";
-import { getConnectionOptions } from "../utils/auth";
+import { getConnectionOptions } from "./auth";
 import { Channel } from "amqplib";
 import { UplinkMessage } from "../customTypes";
+import { logData, logError } from "@svkruik/sk-platform-formatters";
 dotenv.config();
 
 let channel: Channel | null = null;
@@ -38,8 +38,16 @@ export async function sendUplink(exchange: string, exchangeType: string, exchang
         if (!channel) throw new Error("Uplink connection missing.");
         channel.assertExchange(exchange, exchangeType, { durable: false });
         channel.publish(exchange, exchangeKey, Buffer.from(JSON.stringify(payload)));
-        log(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for reason '${payload.reason}'`, "info");
+        logData(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for reason '${payload.reason}'`, "info");
     } catch (error: any) {
         logError(error);
     }
+}
+
+export const defaultPayload = {
+    sender: "Uplink/Integrations",
+    triggerSource: "GitHub Actions",
+    reason: "GitHub Actions Push Event",
+    task: "Deploy",
+    timestamp: new Date()
 }

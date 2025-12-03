@@ -1,6 +1,6 @@
 {
-  "name": "sk-uplink",
-  "description": "SK Uplink",
+  "name": "sk-uplink-server",
+  "description": "SK Uplink - Server",
   "version": "1.0.0",
   "author": "Stefan Kruik",
   "repository": {
@@ -17,6 +17,7 @@
     "start": "node dist/server.js"
   },
   "dependencies": {
+    "@svkruik/sk-platform-formatters": "^0.0.3",
     "amqplib": "^0.10.5",
     "dotenv": "^16.4.7",
     "fastify": "^4.29.0",

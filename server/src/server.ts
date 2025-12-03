@@ -1,9 +1,6 @@
 import Fastify, { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify';
 import dotenv from "dotenv";
-import { log, logError } from './utils/logger';
 import { ActionEntry } from './customTypes';
-import { getConnection } from './utils/connection';
-import { Channel } from 'amqplib';
 dotenv.config();
 const fastify = Fastify();
 
@@ -13,24 +10,23 @@ import { pushSkPlatform } from './out/sk-platform';
 import { pushPortfolio } from './out/portfolio';
 import { pushOverway } from './out/overway';
 import { pushUplink } from './out/uplink';
-import { pushDjOpenSource } from './out/dj-open-source';
+import { logData, logError } from '@svkruik/sk-platform-formatters';
 
 // Authorization & Logging
 fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
     const authorization = request.headers.authorization;
     if (!authorization || authorization.split(" ")[1] !== process.env.REST_DEPLOYMENT_TOKEN) return reply.code(401).send();
-    log(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Body: ${request.body ? `(100 char limit) ${JSON.stringify(request.body).slice(0, 100)}` : "None"}`, "info");
-    done();
+    logData(`API Request || Agent: ${request.headers["user-agent"]} || ${request.method} ${request.url} || Body: ${request.body ? `(100 char limit) ${JSON.stringify(request.body).slice(0, 100)}` : "None"}`, "info");
+    return done();
 });
 
 // GitHub Actions
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2511.1" });
+        reply.send({ message: "Received 2511.2" });
         const body: ActionEntry = request.body as ActionEntry;
-        const channel: Channel | null = await getConnection();
-        if (!channel || !body) return;
+        if (!body) return;
 
         // Sending Downstream
 
@@ -46,9 +42,6 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                 case "Portfolio-Website":
                     await pushPortfolio(body);
                     break;
-                case "DJ-Open-Source":
-                    await pushDjOpenSource(body);
-                    break;
                 case "Overway":
                     await pushOverway(body);
                     break;
@@ -56,7 +49,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     pushUplink();
                     break;
                 default:
-                    log(`Received unsupported ${body.type} event from ${body.repository} repository.`, "info");
+                    logData(`Received unsupported ${body.type} event from ${body.repository} repository.`, "warning");
                     break;
             }
 
@@ -67,7 +60,7 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await releaseSkBots(body);
                     break;
                 default:
-                    log(`Received unsupported ${body.type} event from ${body.repository} repository.`, "info");
+                    logData(`Received unsupported ${body.type} event from ${body.repository} repository.`, "warning");
                     break;
             }
         }
@@ -86,9 +79,5 @@ fastify.post("*", async (_request: FastifyRequest, reply: FastifyReply): Promise
 
 // Start
 fastify.listen({ port: parseInt(process.env.REST_PORT as string) })
-    .then(() => {
-        log(`Uplink API server listening on port ${process.env.REST_PORT}`, "info");
-    }).catch((error) => {
-        fastify.log.error(error);
-        process.exit(1);
-    });
+    .then(() => logData(`Uplink API server listening on port ${process.env.REST_PORT}`, "info"))
+    .catch((error) => logError(error));

@@ -1,5 +1,5 @@
 import { ActionEntry } from "../customTypes";
-import { sendUplink } from "../utils/connection";
+import { defaultPayload, sendUplink } from "../utils/connection";
 
 /**
  * Deploys the SK Bots.
@@ -8,13 +8,9 @@ import { sendUplink } from "../utils/connection";
  */
 export async function pushSkBots(body: ActionEntry): Promise<void> {
     await sendUplink("broadcast-bots", "fanout", "", {
-        sender: "Uplink/Integrations",
         recipient: "SK-Bots/*",
-        triggerSource: "GitHub Actions",
-        reason: "GitHub Actions Push Event",
-        task: "Deploy",
         content: body.payload,
-        timestamp: new Date()
+        ...defaultPayload
     });
 }
 
@@ -25,12 +21,8 @@ export async function pushSkBots(body: ActionEntry): Promise<void> {
  */
 export async function releaseSkBots(body: ActionEntry): Promise<void> {
     await sendUplink("unicast-bots", "direct", "Apricaria", {
-        sender: "Uplink/Integrations",
         recipient: "SK-Bots/Apricaria",
-        triggerSource: "GitHub Actions",
-        reason: "GitHub Actions Release Event",
-        task: "Broadcast",
         content: body.payload,
-        timestamp: new Date()
+        ...defaultPayload
     });
 }

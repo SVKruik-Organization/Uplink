@@ -1,0 +1,42 @@
+{
+  "name": "@svkruik/sk-uplink-connector",
+  "description": "Connecting with SK Uplink made easy.",
+  "keywords": [
+    "sk-platform",
+    "sk-uplink",
+    "amqp",
+    "rabbitmq"
+  ],
+  "version": "0.0.1",
+  "author": "Stefan Kruik",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SVKruik-Organization/Uplink.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SVKruik-Organization/Uplink/issues"
+  },
+  "homepage": "https://github.com/SVKruik-Organization/Uplink#readme",
+  "license": "MIT",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "types": "index.d.ts",
+  "main": "dist/index.js",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@svkruik/sk-platform-formatters": "^0.0.3",
+    "@types/amqplib": "^0.10.8",
+    "@types/shelljs": "^0.8.17",
+    "amqplib": "^0.10.9",
+    "dotenv": "^17.2.3",
+    "shelljs": "^0.10.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

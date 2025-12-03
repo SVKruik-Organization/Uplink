@@ -1,5 +1,5 @@
 import { ActionEntry } from "../customTypes";
-import { sendUplink } from "../utils/connection";
+import { defaultPayload, sendUplink } from "../utils/connection";
 
 /**
  * Deploys the personal portfolio website.
@@ -7,13 +7,9 @@ import { sendUplink } from "../utils/connection";
  * @param body The body of the action entry
  */
 export async function pushPortfolio(body: ActionEntry): Promise<void> {
-    await sendUplink("unicast-misc", "direct", "portfolio", {
-        sender: "Uplink/Integrations",
+    await sendUplink("unicast-misc", "direct", "Portfolio", {
         recipient: "Portfolio-Website/server",
-        triggerSource: "GitHub Actions",
-        reason: "GitHub Actions Push Event",
-        task: "Deploy",
         content: body.payload,
-        timestamp: new Date()
+        ...defaultPayload
     });
 }
