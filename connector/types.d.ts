@@ -49,21 +49,38 @@ export type UplinkMessage = {
 }
 export type TaskHandler = (messageContent: UplinkMessage) => void;
 export type UplinkExchanges =
-    "unicast-products"
-    | "unicast-services"
-    | "unicast-misc"
-    | "unicast-bots"
-    | "broadcast-bots"
-    | "broadcast-global";
+    "unicast-products" // Specific to products
+    | "unicast-services" // Specific to services
+    | "unicast-misc" // Specific to miscellaneous services/products
+    | "unicast-bots" // Specific to a SK Bot
+    | "broadcast-bots" // Broadcast to all SK Bots
+    | "broadcast-global"; // Broadcast to all services/products/SK Bots
 export type UplinkExchangeTypes = "direct" | "topic" | "headers" | "fanout" | "match";
 export type UplinkRoutingKeys =
     // unicast-products
+    | "Commander"
     | "Platform"
-    | "Docs"
     | "Overway"
     | "Administrator"
+    | "Docs"
+    | "Horizon"
 
     // unicast-services
+    | "Uplink"
+    | "Amplify"
+    | "Lumen"
+    | "Monitor"
+    | "Pivot"
+    | "Lexicon"
+    | "Orbit"
+    | "Flare"
+    | "Tempo"
+    | "Forge"
+    | "Dispatch"
+    | "Render"
+
+    // unicast-misc
+    | "Portfolio"
 
     // unicast-bots
     | "Apricaria"
@@ -72,8 +89,5 @@ export type UplinkRoutingKeys =
     | "Ispidina"
     | "Interpres"
 
-    // unicast-misc
-    | "Portfolio"
-
-    // Broadcasts
+    // Universal Broadcasts
     | ""

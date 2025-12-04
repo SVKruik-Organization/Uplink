@@ -39,16 +39,28 @@ export function getConnectionOptions(envLocationOverwrite?: {
     username?: string,
     password?: string
 }): Options.Connect {
-    if (!process.env.UPLINK_HOST && !envLocationOverwrite?.host) throw new Error("AQMP host missing.");
-    if (!process.env.UPLINK_PORT && !envLocationOverwrite?.port) throw new Error("AQMP port missing.");
-    if (!process.env.UPLINK_USERNAME && !envLocationOverwrite?.username) throw new Error("AQMP username missing.");
-    if (!process.env.UPLINK_PASSWORD && !envLocationOverwrite?.password) throw new Error("AQMP password missing.");
+    const uplinkHost = envLocationOverwrite?.host ?? process.env.UPLINK_HOST;
+    const uplinkPort = envLocationOverwrite?.port ?? process.env.UPLINK_PORT;
+    const uplinkUsername = envLocationOverwrite?.username ?? process.env.UPLINK_USERNAME;
+    const uplinkPassword = envLocationOverwrite?.password ?? process.env.UPLINK_PASSWORD;
+
+    if (!uplinkHost)
+        throw new Error("Uplink host missing. Add 'UPLINK_HOST' to your environment variables.");
+
+    if (!uplinkPort)
+        throw new Error("Uplink port missing. Add 'UPLINK_PORT' to your environment variables.");
+
+    if (!uplinkUsername)
+        throw new Error("Uplink username missing. Add 'UPLINK_USERNAME' to your environment variables.");
+
+    if (!uplinkPassword)
+        throw new Error("Uplink password missing. Add 'UPLINK_PASSWORD' to your environment variables.");
 
     return {
         "protocol": "amqp",
-        "hostname": envLocationOverwrite?.host ?? process.env.UPLINK_HOST,
-        "port": parseInt(envLocationOverwrite?.port ?? process.env.UPLINK_PORT as string),
-        "username": envLocationOverwrite?.username ?? process.env.UPLINK_USERNAME,
-        "password": envLocationOverwrite?.password ?? process.env.UPLINK_PASSWORD
+        "hostname": uplinkHost,
+        "port": parseInt(uplinkPort as string),
+        "username": uplinkUsername,
+        "password": uplinkPassword
     }
 }

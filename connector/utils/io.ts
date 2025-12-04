@@ -8,7 +8,7 @@ let retries: number = 0;
 
 /**
  * Mounts the Uplink connector to listen for incoming messages.
- * Handles "Deploy" by default.
+ * Handles "Deploy" by default, but can be disabled and/or extended.
  * 
  * @param taskHandler Additional handling for other received tasks.
  * @param options Configuration options for mounting.
@@ -30,9 +30,9 @@ export async function mountUplink(taskHandler?: TaskHandler, options?: {
         const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
         const exchangeName: string | undefined = envLocationOverwrite?.exchangeName ?? process.env.UPLINK_EXCHANGE;
         const routingKey: string | undefined = envLocationOverwrite?.routingKey ?? process.env.UPLINK_ROUTING_KEY;
-        if (!channel) throw new Error("Uplink connection missing.");
-        if (!exchangeName) throw new Error("Uplink exchange name missing.");
-        if (!routingKey) throw new Error("Uplink routing key missing.");
+        if (!channel) throw new Error("Uplink connection missing. Cannot mount connector.");
+        if (!exchangeName) throw new Error("Uplink exchange name missing. Add 'UPLINK_EXCHANGE' to your environment variables.");
+        if (!routingKey) throw new Error("Uplink routing key missing. Add 'UPLINK_ROUTING_KEY' to your environment variables.");
 
         channel.assertExchange(exchangeName, "direct", { durable: false });
         const queue = await channel.assertQueue("", { exclusive: true });
@@ -52,18 +52,19 @@ export async function mountUplink(taskHandler?: TaskHandler, options?: {
                         break;
                     default:
                         logData(`No default handler for task '${messageContent.task}'. Passing to custom handler if available.`, "info");
-                        if (taskHandler) taskHandler(messageContent);
                         break;
                 }
+
+                if (taskHandler) return taskHandler(messageContent);
             }
         }, {
             noAck: false
         });
 
-        logData(`Uplink connector mounted on exchange '${exchangeName}' with routing key '${routingKey}'`, "info");
+        logData(`Uplink connector mounted on exchange '${exchangeName}' with routing key '${routingKey}'.`, "info");
     } catch (error: any) {
         retries += 1;
-        if (retries < (options?.allowedRetries || 3)) {
+        if (retries < (options?.allowedRetries || 2)) {
             logData(`Mounting Uplink connector failed. Retrying ${retries}/3...`, "warning");
             return await mountUplink(taskHandler, options);
         }
@@ -92,7 +93,7 @@ export async function sendUplink(exchangeOptions: {
 }): Promise<void> {
     try {
         const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
-        if (!channel) throw new Error("Uplink connection missing.");
+        if (!channel) throw new Error("Uplink connection missing. Cannot send message.");
         channel.assertExchange(exchangeOptions.name, exchangeOptions.type, { durable: false });
         channel.publish(exchangeOptions.name, exchangeOptions.router, Buffer.from(JSON.stringify(payload)));
         logData(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for reason '${payload.reason}'`, "info");
