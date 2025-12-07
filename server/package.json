@@ -1,7 +1,7 @@
 {
   "name": "sk-uplink-server",
   "description": "SK Uplink - Server",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Stefan Kruik",
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@svkruik/sk-platform-formatters": "^0.0.4",
-    "@svkruik/sk-uplink-connector": "^0.1.1",
+    "@svkruik/sk-uplink-connector": "^0.1.2",
     "amqplib": "^0.10.5",
     "dotenv": "^16.4.7",
     "fastify": "^4.29.0",

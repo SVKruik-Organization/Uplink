@@ -1,16 +1,23 @@
 import Fastify, { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify';
 import dotenv from "dotenv";
+import { logData, logError } from '@svkruik/sk-platform-formatters';
 import { ActionEntry } from './customTypes';
 dotenv.config();
 const fastify = Fastify();
+
+// Environment Variable Checks
+if (!process.env.REST_PORT || !process.env.REST_DEPLOYMENT_TOKEN) {
+    logError("Missing configuration in environment variables.");
+    process.exit(1);
+}
 
 // Downstream Handlers
 import { pushSkBots, releaseSkBots } from './out/sk-bots';
 import { pushSkPlatform } from './out/sk-platform';
 import { pushPortfolio } from './out/portfolio';
-import { pushOverway } from './out/overway';
+import { pushSkOverway } from './out/sk-overway';
 import { pushUplink } from './out/uplink';
-import { logData, logError } from '@svkruik/sk-platform-formatters';
+import { pushDispatch } from './out/dispatch';
 
 // Authorization & Logging
 fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, done: HookHandlerDoneFunction) => {
@@ -24,7 +31,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2511.3" });
+        reply.send({ message: "Received 2511.4" });
         const body: ActionEntry = request.body as ActionEntry;
         if (!body) return;
 
@@ -43,7 +50,10 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
                     await pushPortfolio(body);
                     break;
                 case "Overway":
-                    await pushOverway(body);
+                    await pushSkOverway(body);
+                    break;
+                case "Dispatch":
+                    await pushDispatch(body);
                     break;
                 case "Uplink":
                     pushUplink();
@@ -78,6 +88,6 @@ fastify.post("*", async (_request: FastifyRequest, reply: FastifyReply): Promise
 });
 
 // Start
-fastify.listen({ port: parseInt(process.env.REST_PORT as string) })
+fastify.listen({ port: parseInt(process.env.REST_PORT) })
     .then(() => logData(`Uplink API server listening on port ${process.env.REST_PORT}`, "info"))
     .catch((error) => logError(error));

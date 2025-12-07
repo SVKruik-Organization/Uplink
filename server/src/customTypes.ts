@@ -5,6 +5,7 @@ export type ActionEntry = {
     "payload": string
 }
 
+// Common Deploy Payload
 export const deployPayload = {
     sender: "Uplink/Integrations",
     triggerSource: "GitHub Actions",
