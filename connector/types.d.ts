@@ -1,43 +1,32 @@
 import amqp, { Options } from "amqplib";
 
 // Connection
-export async function getUplinkConnection(envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-}): Promise<amqp.Channel | null>;
-export function getConnectionOptions(envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-}): Options.Connect;
+export function getUplinkConnection(envLocationOverwrite?: envLocationOverwrite): Promise<amqp.Channel | null>;
+export function getConnectionOptions(envLocationOverwrite?: envLocationOverwrite): Options.Connect;
 
 // I/O
-export function mountUplink(taskHandler?: TaskHandler, options?: {
+export function mountUplink(taskHandlerOptions?: {
+    handler: TaskHandler,
+    supportedTasks: Array<string>
+}, options?: {
     allowedRetries?: number,
     deployTaskOptOut?: boolean
-}, envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-    exchangeName?: string,
-    routingKey?: string
-}): Promise<void>;
+}, envLocationOverwrite?: envLocationOverwrite): Promise<void>;
 export function sendUplink(exchangeOptions: {
     name: UplinkExchanges,
     type: UplinkExchangeTypes,
     router: UplinkRoutingKeys
-}, payload: UplinkMessage, envLocationOverwrite?: {
+}, payload: UplinkMessage, envLocationOverwrite?: envLocationOverwrite): Promise<void>;
+
+// Types
+export type envLocationOverwrite = {
     host?: string,
     port?: string,
     username?: string,
-    password?: string
-}): Promise<void>;
-
-// Types
+    password?: string,
+    exchangeName?: string,
+    routingKey?: string
+}
 export type UplinkMessage = {
     "sender": string,
     "recipient": string,

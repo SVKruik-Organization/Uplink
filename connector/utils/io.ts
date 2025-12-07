@@ -1,6 +1,6 @@
 import { Channel, Message } from "amqplib";
 import { exec } from "shelljs";
-import { TaskHandler, UplinkExchanges, UplinkExchangeTypes, UplinkMessage, UplinkRoutingKeys } from "../types";
+import { envLocationOverwrite, TaskHandler, UplinkExchanges, UplinkExchangeTypes, UplinkMessage, UplinkRoutingKeys } from "../types";
 import { logData, logError } from "@svkruik/sk-platform-formatters";
 import { getUplinkConnection } from "./connection";
 
@@ -15,17 +15,13 @@ let retries: number = 0;
  * @param envLocationOverwrite Optional overwrite for environment variables. Used for frontend environments where env vars are not directly accessible.
  * @throws Will throw an error when the mounting fails after 3 retries.
  */
-export async function mountUplink(taskHandler?: TaskHandler, options?: {
+export async function mountUplink(taskHandlerOptions?: {
+    handler: TaskHandler,
+    supportedTasks: Array<string>
+}, options?: {
     allowedRetries?: number,
     deployTaskOptOut?: boolean
-}, envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string,
-    exchangeName?: string,
-    routingKey?: string
-}): Promise<void> {
+}, envLocationOverwrite?: envLocationOverwrite): Promise<void> {
     try {
         const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
         const exchangeName: string | undefined = envLocationOverwrite?.exchangeName ?? process.env.UPLINK_EXCHANGE;
@@ -45,13 +41,23 @@ export async function mountUplink(taskHandler?: TaskHandler, options?: {
                 channel.ack(message);
                 logData(`Received Uplink message from '${messageContent.sender}' for reason '${messageContent.reason}'`, "info");
 
+                // Default Handlers
+                let defaultMessage: string = `No default handler for task '${messageContent.task}'.`;
+                let taskHandler: TaskHandler | null = null;
+                if (taskHandlerOptions) {
+                    if (taskHandlerOptions.supportedTasks.includes(messageContent.task)) {
+                        defaultMessage += " Passing to custom handler.";
+                        taskHandler = taskHandlerOptions.handler;
+                    } else defaultMessage += " Task not supported by the custom handler.";
+                }
+
                 switch (messageContent.task) {
                     case "Deploy":
                         if (process.env.NODE_ENV === "production" && !(options?.deployTaskOptOut))
                             exec("bash deploy.sh");
                         break;
                     default:
-                        logData(`No default handler for task '${messageContent.task}'. Passing to custom handler if available.`, "info");
+                        logData(defaultMessage, "info");
                         break;
                 }
 
@@ -66,7 +72,7 @@ export async function mountUplink(taskHandler?: TaskHandler, options?: {
         retries += 1;
         if (retries < (options?.allowedRetries || 2)) {
             logData(`Mounting Uplink connector failed. Retrying ${retries}/3...`, "warning");
-            return await mountUplink(taskHandler, options);
+            return await mountUplink(taskHandlerOptions, options);
         }
         retries = 0;
         logData("Mounting Uplink connector failed after maximum retries.", "warning");
@@ -85,18 +91,13 @@ export async function sendUplink(exchangeOptions: {
     name: UplinkExchanges,
     type: UplinkExchangeTypes,
     router: UplinkRoutingKeys
-}, payload: UplinkMessage, envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-}): Promise<void> {
+}, payload: UplinkMessage, envLocationOverwrite?: envLocationOverwrite): Promise<void> {
     try {
         const channel: Channel | null = await getUplinkConnection(envLocationOverwrite);
         if (!channel) throw new Error("Uplink connection missing. Cannot send message.");
         channel.assertExchange(exchangeOptions.name, exchangeOptions.type, { durable: false });
         channel.publish(exchangeOptions.name, exchangeOptions.router, Buffer.from(JSON.stringify(payload)));
-        logData(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' for reason '${payload.reason}'`, "info");
+        logData(`Sent Uplink message from '${payload.sender}' to '${payload.recipient}' with task '${payload.task}'.`, "info");
     } catch (error: any) {
         logError(error);
     }

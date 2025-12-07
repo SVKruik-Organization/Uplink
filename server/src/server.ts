@@ -1,6 +1,8 @@
+import { sendUplink, UplinkExchanges, UplinkExchangeTypes, UplinkRoutingKeys } from '@svkruik/sk-uplink-connector';
+import { logData, logError } from '@svkruik/sk-platform-formatters';
 import Fastify, { FastifyReply, FastifyRequest, HookHandlerDoneFunction } from 'fastify';
 import dotenv from "dotenv";
-import { logData, logError } from '@svkruik/sk-platform-formatters';
+import { formatApiError } from './utils/format';
 import { ActionEntry } from './customTypes';
 dotenv.config();
 const fastify = Fastify();
@@ -31,7 +33,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2511.4" });
+        reply.send({ message: "Received 2511.5" });
         const body: ActionEntry = request.body as ActionEntry;
         if (!body) return;
 
@@ -75,7 +77,69 @@ fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): P
             }
         }
     } catch (error: any) {
-        logError(error);
+        return formatApiError(error, reply);
+    }
+});
+
+// Inject an Uplink Message
+fastify.post("/inject", {
+    schema: {
+        body: {
+            type: "object",
+            properties: {
+                exchange: {
+                    required: ["name", "type", "router"],
+                    type: "object",
+                    properties: {
+                        name: { type: "string" },
+                        type: { type: "string" },
+                        router: { type: "string" }
+                    },
+                },
+                payload: {
+                    required: ["recipient", "sender", "reason", "task"],
+                    type: "object",
+                    properties: {
+                        content: { type: "object" },
+                        recipient: { type: "string" },
+                        sender: { type: "string" },
+                        reason: { type: "string" },
+                        task: { type: "string" }
+                    },
+                },
+            }
+        }
+    }
+}, async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
+    try {
+        // Body Validation
+        const body = request.body as {
+            exchange: { name: UplinkExchanges; type: UplinkExchangeTypes; router: UplinkRoutingKeys; },
+            payload: { content?: object; recipient: string; sender: string; reason: string; task: string; }
+        };
+        if (!(body.exchange.name satisfies UplinkExchanges) ||
+            !(body.exchange.type satisfies UplinkExchangeTypes) ||
+            !(body.exchange.router satisfies UplinkRoutingKeys)) {
+            throw new Error("Exchange configuration parameters are invalid.", {
+                cause: { statusCode: 1500 },
+            });
+        }
+        const content = body.payload.content ? (typeof body.payload.content === "string" ? body.payload.content : JSON.stringify(body.payload.content)) : "";
+
+        await sendUplink({
+            ...body.exchange
+        }, {
+            "sender": body.payload.sender,
+            "recipient": body.payload.recipient,
+            "triggerSource": "Uplink/Injection",
+            "reason": body.payload.reason,
+            "task": body.payload.task,
+            "content": content,
+            "timestamp": new Date()
+        });
+        return reply.send({ message: `Sent Uplink message from '${body.payload.sender}' to '${body.payload.recipient}' with task '${body.payload.task}'.` });
+    } catch (error: any) {
+        return formatApiError(error, reply);
     }
 });
 

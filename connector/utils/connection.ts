@@ -1,6 +1,7 @@
 import amqp, { Options } from "amqplib";
 import { Channel } from "amqplib";
 import { logError } from "@svkruik/sk-platform-formatters";
+import { envLocationOverwrite } from "../types";
 
 let channel: Channel | null = null;
 
@@ -10,12 +11,7 @@ let channel: Channel | null = null;
  * @param envLocationOverwrite Optional overwrite for environment variables. Used for frontend environments where env vars are not directly accessible.
  * @returns The RabbitMQ Channel
  */
-export async function getUplinkConnection(envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-}): Promise<amqp.Channel | null> {
+export async function getUplinkConnection(envLocationOverwrite?: envLocationOverwrite): Promise<amqp.Channel | null> {
     try {
         if (channel) return channel;
         channel = await (await amqp.connect(getConnectionOptions(envLocationOverwrite))).createChannel();
@@ -33,12 +29,7 @@ export async function getUplinkConnection(envLocationOverwrite?: {
  * @returns The connection options.
  * @throws Will throw an error if any required environment variable is missing.
  */
-export function getConnectionOptions(envLocationOverwrite?: {
-    host?: string,
-    port?: string,
-    username?: string,
-    password?: string
-}): Options.Connect {
+export function getConnectionOptions(envLocationOverwrite?: envLocationOverwrite): Options.Connect {
     const uplinkHost = envLocationOverwrite?.host ?? process.env.UPLINK_HOST;
     const uplinkPort = envLocationOverwrite?.port ?? process.env.UPLINK_PORT;
     const uplinkUsername = envLocationOverwrite?.username ?? process.env.UPLINK_USERNAME;
