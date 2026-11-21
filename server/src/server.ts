@@ -33,7 +33,7 @@ fastify.addHook("preHandler", (request: FastifyRequest, reply: FastifyReply, don
 fastify.post("/actions", async (request: FastifyRequest, reply: FastifyReply): Promise<void> => {
     try {
         // Setup
-        reply.send({ message: "Received 2511.5" });
+        reply.send({ message: "Received 2611.1" });
         const body: ActionEntry = request.body as ActionEntry;
         if (!body) return;
 

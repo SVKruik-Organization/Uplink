@@ -16,14 +16,4 @@ export async function pushSkPlatform(body: ActionEntry): Promise<void> {
         content: body.payload,
         ...deployPayload
     });
-
-    await sendUplink({
-        "name": "unicast-products",
-        "type": "direct",
-        "router": "Docs"
-    }, {
-        recipient: "SK-Platform/docs",
-        content: body.payload,
-        ...deployPayload
-    });
 }
